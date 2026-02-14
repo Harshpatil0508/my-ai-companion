@@ -1,0 +1,186 @@
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Brain, Shield, BarChart3, Sparkles, ArrowRight, Activity, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const features = [
+  {
+    icon: Brain,
+    title: "Behavior Detection",
+    desc: "AI detects patterns in your habits and flags meaningful shifts before you notice them.",
+  },
+  {
+    icon: Shield,
+    title: "Explainable AI",
+    desc: "Every recommendation comes with clear reasoning — no black-box decisions.",
+  },
+  {
+    icon: Target,
+    title: "Validation Loop",
+    desc: "AI tracks whether its own advice actually improved your metrics. Accountability built in.",
+  },
+  {
+    icon: BarChart3,
+    title: "Deep Analytics",
+    desc: "Visualize trends across sleep, mood, productivity, and goals over weeks and months.",
+  },
+];
+
+const Landing = () => {
+  return (
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Grid background */}
+      <div className="absolute inset-0 grid-pattern opacity-30" />
+      {/* Gradient orbs */}
+      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-primary/10 blur-[120px] animate-pulse-glow" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-accent/10 blur-[120px] animate-pulse-glow" />
+
+      {/* Nav */}
+      <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2">
+          <Activity className="h-7 w-7 text-primary" />
+          <span className="text-xl font-display font-bold tracking-tight">Reflecta</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" asChild>
+            <Link to="/auth">Log In</Link>
+          </Button>
+          <Button className="gradient-primary glow" asChild>
+            <Link to="/auth?mode=register">Get Started</Link>
+          </Button>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <main className="relative z-10 max-w-7xl mx-auto px-6">
+        <section className="pt-20 pb-32 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <div className="inline-flex items-center gap-2 glass-card px-4 py-2 mb-8 text-sm text-muted-foreground">
+              <Sparkles className="h-4 w-4 text-primary" />
+              AI-Powered Personal Tracking
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-display font-bold leading-tight mb-6 max-w-4xl mx-auto">
+              AI that's{" "}
+              <span className="gradient-text">accountable</span>
+              , not just intelligent
+            </h1>
+
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+              Track your daily habits, get AI-driven insights with full transparency,
+              and watch as the system validates its own advice against your real results.
+            </p>
+
+            <div className="flex items-center justify-center gap-4">
+              <Button size="lg" className="gradient-primary glow text-base px-8 h-12" asChild>
+                <Link to="/auth?mode=register">
+                  Start Tracking <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" className="text-base px-8 h-12 border-border/50" asChild>
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            </div>
+          </motion.div>
+
+          {/* Dashboard preview mockup */}
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mt-20 max-w-4xl mx-auto"
+          >
+            <div className="glass-card p-1 glow">
+              <div className="rounded-lg bg-card p-6 space-y-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-3 w-3 rounded-full bg-destructive/70" />
+                  <div className="h-3 w-3 rounded-full bg-accent/70" />
+                  <div className="h-3 w-3 rounded-full bg-primary/70" />
+                  <span className="ml-2 text-xs text-muted-foreground">reflecta — dashboard</span>
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                  {["Mood: 8/10", "Sleep: 7.5h", "Work: 6h", "Goals: 85%"].map((stat) => (
+                    <div key={stat} className="glass-card p-4 text-center">
+                      <p className="text-sm text-muted-foreground">{stat.split(":")[0]}</p>
+                      <p className="text-lg font-bold text-primary mt-1">{stat.split(": ")[1]}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="glass-card p-4">
+                  <p className="text-sm text-muted-foreground mb-1">AI Insight</p>
+                  <p className="text-sm text-foreground">
+                    "Your mood improves 23% on days you sleep 7+ hours. Prioritize sleep tonight."
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+        {/* Features */}
+        <section className="pb-32">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
+              What makes Reflecta <span className="gradient-text">different</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Most trackers just collect data. Reflecta's AI learns, explains, and proves its value.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {features.map((f, i) => (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="glass-card p-6 hover:glow transition-shadow duration-300"
+              >
+                <div className="h-10 w-10 rounded-lg gradient-primary flex items-center justify-center mb-4">
+                  <f.icon className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <h3 className="text-lg font-display font-semibold mb-2">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="pb-32 text-center">
+          <div className="glass-card p-12 max-w-3xl mx-auto glow-accent">
+            <h2 className="text-3xl font-display font-bold mb-4">
+              Ready to track smarter?
+            </h2>
+            <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
+              Join Reflecta and start building a data-driven understanding of your daily life — powered by AI that explains itself.
+            </p>
+            <Button size="lg" className="gradient-primary glow text-base px-10 h-12" asChild>
+              <Link to="/auth?mode=register">
+                Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-border/50 py-8 text-center text-sm text-muted-foreground">
+        <p>© 2026 Reflecta. AI-powered personal accountability.</p>
+      </footer>
+    </div>
+  );
+};
+
+export default Landing;
