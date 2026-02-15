@@ -8,14 +8,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar,
 } from "recharts";
-
-const mockData = Array.from({ length: 30 }, (_, i) => ({
-  day: i + 1,
-  mood: Math.floor(Math.random() * 4 + 5),
-  sleep: +(Math.random() * 3 + 5.5).toFixed(1),
-  work: +(Math.random() * 4 + 4).toFixed(1),
-  goals: Math.floor(Math.random() * 40 + 50),
-}));
+import { MonthlyAnalytics } from "@/types/analytics";
 
 const chartTooltipStyle = {
   contentStyle: { background: "hsl(222, 47%, 9%)", border: "1px solid hsl(222, 30%, 18%)", borderRadius: 8, fontSize: 12 },
@@ -23,14 +16,16 @@ const chartTooltipStyle = {
 };
 
 const Analytics = () => {
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<MonthlyAnalytics | null>(null);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.getAnalytics().then(setAnalytics).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  const data = analytics?.daily_data || mockData;
+  const data = analytics?.daily_data ?? [];
+
 
   return (
     <DashboardLayout>

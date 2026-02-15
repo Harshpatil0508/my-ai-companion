@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { User, Bell, Shield, Save, Eye, EyeOff } from "lucide-react";
+import { User, Bell, Shield, Save, Eye, EyeOff, Upload } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,224 +9,189 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { api } from "@/lib/api";
 
-const Settings = () => {
+export default function Settings() {
   const { toast } = useToast();
 
-  // Profile state
-  const [fullName, setFullName] = useState("John Doe");
-  const [email, setEmail] = useState("john@example.com");
   const [saving, setSaving] = useState(false);
 
-  // Password state
+  // User
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [avatar, setAvatar] = useState<string | null>(null);
+
+  // Password
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPasswords, setShowPasswords] = useState(false);
 
-  // Preferences state
+  // Preferences
   const [dailyReminder, setDailyReminder] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
   const [monthlyReview, setMonthlyReview] = useState(true);
   const [aiMotivation, setAiMotivation] = useState(true);
 
+  // Load user on mount
+  useEffect(() => {
+    api.getMe().then((u) => {
+      setFullName(u.name);
+      setEmail(u.email);
+      setAvatar(u.avatar_url);
+
+      setDailyReminder(u.daily_reminder);
+      setWeeklyDigest(u.weekly_digest);
+      setMonthlyReview(u.monthly_review);
+      setAiMotivation(u.ai_motivation);
+    });
+  }, []);
+
+  // Profile
   const handleSaveProfile = async () => {
-    if (!fullName.trim() || fullName.length > 100) {
-      toast({ title: "Invalid name", description: "Name must be 1–100 characters.", variant: "destructive" });
-      return;
-    }
+    if (!fullName.trim()) return;
+
     setSaving(true);
-    // Simulated API call — replace with api.updateProfile() when backend is ready
-    await new Promise((r) => setTimeout(r, 800));
+    await api.updateProfile(fullName);
     setSaving(false);
-    toast({ title: "Profile updated", description: "Your changes have been saved." });
+
+    toast({ title: "Profile updated" });
   };
 
+  // Password
   const handleChangePassword = async () => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      toast({ title: "Missing fields", description: "Please fill all password fields.", variant: "destructive" });
-      return;
-    }
-    if (newPassword.length < 8) {
-      toast({ title: "Weak password", description: "New password must be at least 8 characters.", variant: "destructive" });
-      return;
-    }
     if (newPassword !== confirmPassword) {
-      toast({ title: "Mismatch", description: "New passwords don't match.", variant: "destructive" });
+      toast({ title: "Passwords don't match", variant: "destructive" });
       return;
     }
+
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
+    await api.changePassword(currentPassword, newPassword);
     setSaving(false);
+
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
-    toast({ title: "Password changed", description: "Your password has been updated." });
+
+    toast({ title: "Password updated" });
   };
 
+  // Preferences
   const handleSavePreferences = async () => {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 600));
+
+    await api.updatePreferences({
+      daily_reminder: dailyReminder,
+      weekly_digest: weeklyDigest,
+      monthly_review: monthlyReview,
+      ai_motivation: aiMotivation,
+    });
+
     setSaving(false);
-    toast({ title: "Preferences saved", description: "Your notification preferences have been updated." });
+    toast({ title: "Preferences saved" });
+  };
+
+  // Avatar
+  const uploadAvatar = async (file: File) => {
+    const res = await api.uploadAvatar(file);
+    setAvatar(res.avatar_url);
+    toast({ title: "Avatar updated" });
   };
 
   const initials = fullName
     .split(" ")
     .map((n) => n[0])
     .join("")
-    .toUpperCase()
-    .slice(0, 2);
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <DashboardLayout>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-display font-bold mb-1">Settings</h1>
-        <p className="text-muted-foreground text-sm mb-8">Manage your account and preferences</p>
+        <h1 className="text-3xl font-display font-bold mb-8">Settings</h1>
 
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="glass-card">
-            <TabsTrigger value="profile" className="gap-2">
-              <User className="h-4 w-4" /> Profile
-            </TabsTrigger>
-            <TabsTrigger value="security" className="gap-2">
-              <Shield className="h-4 w-4" /> Security
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-2">
-              <Bell className="h-4 w-4" /> Notifications
-            </TabsTrigger>
+        <Tabs defaultValue="profile">
+          <TabsList className="glass-card mb-6">
+            <TabsTrigger value="profile"><User className="h-4 w-4 mr-1" />Profile</TabsTrigger>
+            <TabsTrigger value="security"><Shield className="h-4 w-4 mr-1" />Security</TabsTrigger>
+            <TabsTrigger value="notifications"><Bell className="h-4 w-4 mr-1" />Notifications</TabsTrigger>
           </TabsList>
 
-          {/* Profile Tab */}
+          {/* PROFILE */}
           <TabsContent value="profile">
             <div className="glass-card p-6 space-y-6">
-              <div className="flex items-center gap-5">
-                <Avatar className="h-16 w-16 text-lg">
-                  <AvatarFallback className="gradient-primary text-primary-foreground font-bold">
-                    {initials}
-                  </AvatarFallback>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  {avatar && <AvatarImage src={avatar} />}
+                  <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="font-display font-semibold text-lg">{fullName}</p>
-                  <p className="text-sm text-muted-foreground">{email}</p>
-                </div>
+
+                <label className="cursor-pointer text-sm text-primary flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
+                  Change avatar
+                  <input
+                    hidden
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => e.target.files && uploadAvatar(e.target.files[0])}
+                  />
+                </label>
               </div>
 
-              <Separator className="bg-border/50" />
+              <Separator />
 
-              <div className="grid gap-4 max-w-md">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    maxLength={100}
-                    className="bg-secondary/30 border-border/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    value={email}
-                    disabled
-                    className="bg-secondary/30 border-border/50 opacity-60 cursor-not-allowed"
-                  />
-                  <p className="text-xs text-muted-foreground">Contact support to change your email.</p>
-                </div>
-              </div>
+              <Label>Full Name</Label>
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
 
-              <Button onClick={handleSaveProfile} disabled={saving} className="gradient-primary glow">
-                <Save className="mr-2 h-4 w-4" /> {saving ? "Saving…" : "Save Changes"}
+              <Label>Email</Label>
+              <Input value={email} disabled />
+
+              <Button onClick={handleSaveProfile} disabled={saving}>
+                <Save className="h-4 w-4 mr-2" /> Save
               </Button>
             </div>
           </TabsContent>
 
-          {/* Security Tab */}
+          {/* SECURITY */}
           <TabsContent value="security">
-            <div className="glass-card p-6 space-y-6">
-              <div>
-                <h3 className="font-display font-semibold text-lg mb-1">Change Password</h3>
-                <p className="text-sm text-muted-foreground">Update your password to keep your account secure.</p>
-              </div>
+            <div className="glass-card p-6 space-y-4 max-w-md">
+              <Label>Current Password</Label>
+              <Input type={showPasswords ? "text" : "password"} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
 
-              <div className="grid gap-4 max-w-md">
-                <div className="space-y-2">
-                  <Label htmlFor="currentPw">Current Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="currentPw"
-                      type={showPasswords ? "text" : "password"}
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      className="bg-secondary/30 border-border/50 pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPasswords(!showPasswords)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showPasswords ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="newPw">New Password</Label>
-                  <Input
-                    id="newPw"
-                    type={showPasswords ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="bg-secondary/30 border-border/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPw">Confirm New Password</Label>
-                  <Input
-                    id="confirmPw"
-                    type={showPasswords ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="bg-secondary/30 border-border/50"
-                  />
-                </div>
-              </div>
+              <Label>New Password</Label>
+              <Input type={showPasswords ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
 
-              <Button onClick={handleChangePassword} disabled={saving} className="gradient-primary glow">
-                <Shield className="mr-2 h-4 w-4" /> {saving ? "Updating…" : "Update Password"}
+              <Label>Confirm Password</Label>
+              <Input type={showPasswords ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+
+              <Button variant="ghost" onClick={() => setShowPasswords(!showPasswords)}>
+                {showPasswords ? <EyeOff /> : <Eye />}
+              </Button>
+
+              <Button onClick={handleChangePassword} disabled={saving}>
+                <Shield className="h-4 w-4 mr-2" /> Update Password
               </Button>
             </div>
           </TabsContent>
 
-          {/* Notifications Tab */}
+          {/* NOTIFICATIONS */}
           <TabsContent value="notifications">
-            <div className="glass-card p-6 space-y-6">
-              <div>
-                <h3 className="font-display font-semibold text-lg mb-1">Notification Preferences</h3>
-                <p className="text-sm text-muted-foreground">Choose what updates you'd like to receive.</p>
-              </div>
+            <div className="glass-card p-6 space-y-4 max-w-md">
+              {[
+                ["Daily Reminder", dailyReminder, setDailyReminder],
+                ["Weekly Digest", weeklyDigest, setWeeklyDigest],
+                ["Monthly Review", monthlyReview, setMonthlyReview],
+                ["AI Motivation", aiMotivation, setAiMotivation],
+              ].map(([label, value, set]: any) => (
+                <div key={label} className="flex justify-between">
+                  <span>{label}</span>
+                  <Switch checked={value} onCheckedChange={set} />
+                </div>
+              ))}
 
-              <div className="space-y-5 max-w-md">
-                {[
-                  { id: "dailyReminder", label: "Daily Log Reminder", desc: "Get reminded to log your day every evening", value: dailyReminder, set: setDailyReminder },
-                  { id: "aiMotivation", label: "AI Daily Motivation", desc: "Receive your personalized AI insight each morning", value: aiMotivation, set: setAiMotivation },
-                  { id: "weeklyDigest", label: "Weekly Digest", desc: "Summary of your weekly progress every Sunday", value: weeklyDigest, set: setWeeklyDigest },
-                  { id: "monthlyReview", label: "Monthly Review Alert", desc: "Get notified when your monthly AI review is ready", value: monthlyReview, set: setMonthlyReview },
-                ].map((pref) => (
-                  <div key={pref.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">{pref.label}</p>
-                      <p className="text-xs text-muted-foreground">{pref.desc}</p>
-                    </div>
-                    <Switch checked={pref.value} onCheckedChange={pref.set} />
-                  </div>
-                ))}
-              </div>
-
-              <Button onClick={handleSavePreferences} disabled={saving} className="gradient-primary glow">
-                <Save className="mr-2 h-4 w-4" /> {saving ? "Saving…" : "Save Preferences"}
+              <Button onClick={handleSavePreferences} disabled={saving}>
+                <Save className="h-4 w-4 mr-2" /> Save Preferences
               </Button>
             </div>
           </TabsContent>
@@ -234,6 +199,4 @@ const Settings = () => {
       </motion.div>
     </DashboardLayout>
   );
-};
-
-export default Settings;
+}

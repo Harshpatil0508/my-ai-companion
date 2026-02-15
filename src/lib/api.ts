@@ -1,3 +1,5 @@
+import type { UserProfile } from "@/types/user";
+import type { MonthlyAnalytics } from "@/types/analytics";
 const API_BASE_URL = "http://localhost:8000";
 
 class ApiClient {
@@ -25,7 +27,10 @@ class ApiClient {
     return !!this.getToken();
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+  ): Promise<T> {
     const token = this.getToken();
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -33,7 +38,10 @@ class ApiClient {
     };
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const res = await fetch(`${this.baseUrl}${endpoint}`, { ...options, headers });
+    const res = await fetch(`${this.baseUrl}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
     if (res.status === 401) {
       this.clearTokens();
@@ -51,7 +59,10 @@ class ApiClient {
 
   // Auth
   async login(email: string, password: string) {
-    const data = await this.request<{ access_token: string; refresh_token: string }>("/auth/login", {
+    const data = await this.request<{
+      access_token: string;
+      refresh_token: string;
+    }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
@@ -67,51 +78,165 @@ class ApiClient {
   }
 
   // Daily Logs
+  // Daily Logs
+
+  // Create today log
   async createLog(log: {
     work_hours: number;
     study_hours: number;
     sleep_hours: number;
-    mood: number;
-    goal_completion: number;
+    mood_score: number;
+    goal_completed_percentage: number;
     notes?: string;
   }) {
-    return this.request("/daily-logs/", { method: "POST", body: JSON.stringify(log) });
-  }
-
-  async getLogs(skip = 0, limit = 10) {
-    return this.request<any[]>(`/daily-logs/?skip=${skip}&limit=${limit}`);
-  }
-
-  async getLogById(id: string) {
-    return this.request<any>(`/daily-logs/${id}`);
-  }
-
-  async updateLog(id: string, log: any) {
-    return this.request(`/daily-logs/${id}`, { method: "PUT", body: JSON.stringify(log) });
-  }
-
-  async deleteLog(id: string) {
-    return this.request(`/daily-logs/${id}`, { method: "DELETE" });
-  }
-
-  // Analytics
-  async getAnalytics(month?: number, year?: number) {
-    const params = new URLSearchParams();
-    if (month) params.set("month", String(month));
-    if (year) params.set("year", String(year));
-    return this.request<any>(`/analytics/monthly?${params}`);
-  }
-
-  // AI
-  async submitFeedback(motivationId: string, helpful: boolean) {
-    return this.request("/ai/feedback", {
+    return this.request<{ message: string; id: number }>("/daily-logs/", {
       method: "POST",
-      body: JSON.stringify({ motivation_id: motivationId, helpful }),
+      body: JSON.stringify(log),
     });
   }
 
+  // Get today's log
+  async getTodayLog() {
+    return this.request<any>("/daily-logs/today");
+  }
+
+  // Get log by date (YYYY-MM-DD)
+  async getLogByDate(date: string) {
+    return this.request<any>(`/daily-logs/by-date/${date}`);
+  }
+
+  // Get paginated logs
+  async getAllLogs(params?: {
+    limit?: number;
+    offset?: number;
+    start_date?: string;
+    end_date?: string;
+    sort?: "asc" | "desc";
+  }) {
+    const query = new URLSearchParams();
+
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.offset) query.set("offset", String(params.offset));
+    if (params?.start_date) query.set("start_date", params.start_date);
+    if (params?.end_date) query.set("end_date", params.end_date);
+    if (params?.sort) query.set("sort", params.sort);
+
+    return this.request<any>(`/daily-logs/all-logs?${query}`);
+  }
+
+  // Update today's log
+  async updateTodayLog(
+    payload: Partial<{
+      work_hours: number;
+      study_hours: number;
+      sleep_hours: number;
+      mood_score: number;
+      goal_completed_percentage: number;
+      notes: string;
+    }>,
+  ) {
+    return this.request("/daily-logs/today", {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // Update log by date
+  async updateLogByDate(date: string, payload: any) {
+    return this.request(`/daily-logs/by-date/${date}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // Delete today's log
+  async deleteTodayLog() {
+    return this.request("/daily-logs/today", {
+      method: "DELETE",
+    });
+  }
+
+  // Delete log by date
+  async deleteLogByDate(date: string) {
+    return this.request(`/daily-logs/by-date/${date}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Delete all logs
+  async deleteAllLogs() {
+    return this.request("/daily-logs/all-logs", {
+      method: "DELETE",
+    });
+  }
+
+  // Analytics
+  getAnalytics(): Promise<MonthlyAnalytics> {
+    return this.request("/analytics/monthly");
+  }
+
+  // AI
+
   async getValidation() {
     return this.request<any>("/ai/validate");
+  }
+
+  // AI Motivations / Insights
+  // AI
+
+  async getInsights(page = 0, limit = 5) {
+    return this.request(`/ai/motivations?page=${page}&limit=${limit}`);
+  }
+
+  async submitFeedback(motivationId: string, helpful: boolean) {
+    return this.request("/ai/feedback", {
+      method: "POST",
+      body: JSON.stringify({
+        motivation_id: motivationId,
+        helpful,
+      }),
+    });
+  }
+
+  getMe(): Promise<UserProfile> {
+    return this.request("/users/me");
+  }
+
+  updateProfile(name: string) {
+    return this.request("/users/profile", {
+      method: "PATCH",
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  changePassword(current: string, next: string) {
+    return this.request("/users/password", {
+      method: "PATCH",
+      body: JSON.stringify({
+        current_password: current,
+        new_password: next,
+      }),
+    });
+  }
+
+  updatePreferences(prefs: any) {
+    return this.request("/users/preferences", {
+      method: "PATCH",
+      body: JSON.stringify(prefs),
+    });
+  }
+
+  uploadAvatar(file: File) {
+    const form = new FormData();
+    form.append("file", file);
+
+    return fetch(`${this.baseUrl}/users/avatar`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.getToken()}`,
+      },
+      body: form,
+    }).then((r) => r.json());
   }
 }
 
