@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Activity, LayoutDashboard, PenSquare, Brain, BarChart3, LogOut } from "lucide-react";
+import { Activity, LayoutDashboard, PenSquare, Brain, BarChart3, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +8,7 @@ const navItems = [
   { to: "/log", icon: PenSquare, label: "Daily Log" },
   { to: "/insights", icon: Brain, label: "AI Insights" },
   { to: "/analytics", icon: BarChart3, label: "Analytics" },
+  { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
