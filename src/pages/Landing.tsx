@@ -172,6 +172,30 @@ const Landing = () => {
           </motion.div>
         </section>
 
+        {/* Stats Counter */}
+        <section className="pb-32">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            {[
+              { value: "10K+", label: "Active Users" },
+              { value: "1M+", label: "Logs Tracked" },
+              { value: "95%", label: "AI Accuracy" },
+              { value: "4.9★", label: "User Rating" },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.4 }}
+                className="text-center p-6"
+              >
+                <p className="text-3xl md:text-4xl font-display font-bold gradient-text mb-1">{stat.value}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
         {/* Features */}
         <section className="pb-32">
           <motion.div
