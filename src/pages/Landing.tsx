@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Brain, Shield, BarChart3, Sparkles, ArrowRight, Activity, Target } from "lucide-react";
+import { Brain, Shield, BarChart3, Sparkles, ArrowRight, Activity, Target, MessageSquareHeart, CalendarCheck, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const features = [
@@ -23,6 +23,33 @@ const features = [
     icon: BarChart3,
     title: "Deep Analytics",
     desc: "Visualize trends across sleep, mood, productivity, and goals over weeks and months.",
+  },
+];
+
+const workflow = [
+  {
+    step: "01",
+    icon: Activity,
+    title: "Log Your Day",
+    desc: "Spend 2 minutes logging mood, sleep, work hours, and goals. Simple and fast.",
+  },
+  {
+    step: "02",
+    icon: Sparkles,
+    title: "Get Daily Motivation",
+    desc: "AI analyzes your patterns and delivers a personalized motivation message every day — with clear reasoning.",
+  },
+  {
+    step: "03",
+    icon: BarChart3,
+    title: "Monthly Deep Review",
+    desc: "At month's end, receive a comprehensive AI review of your progress, trends, and actionable next steps.",
+  },
+  {
+    step: "04",
+    icon: Target,
+    title: "AI Validates Itself",
+    desc: "Did the advice actually help? Reflecta checks its own predictions against your real data.",
   },
 ];
 
@@ -154,6 +181,99 @@ const Landing = () => {
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
+          </div>
+        </section>
+
+        {/* How It Works — Workflow */}
+        <section className="pb-32">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
+              How <span className="gradient-text">Reflecta</span> works
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Four simple steps to a smarter, more accountable you.
+            </p>
+          </motion.div>
+
+          <div className="max-w-3xl mx-auto relative">
+            {/* Connecting line */}
+            <div className="absolute left-8 md:left-10 top-0 bottom-0 w-px bg-gradient-to-b from-primary/60 via-accent/40 to-transparent hidden md:block" />
+
+            {workflow.map((w, i) => (
+              <motion.div
+                key={w.step}
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15, duration: 0.5 }}
+                className="flex gap-5 md:gap-8 mb-10 last:mb-0 group"
+              >
+                <div className="relative z-10 flex-shrink-0">
+                  <div className="h-16 w-16 md:h-20 md:w-20 rounded-2xl gradient-primary flex items-center justify-center glow group-hover:scale-110 transition-transform duration-300">
+                    <w.icon className="h-7 w-7 md:h-8 md:w-8 text-primary-foreground" />
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <span className="text-xs font-mono text-primary/70 tracking-widest">STEP {w.step}</span>
+                  <h3 className="text-xl font-display font-semibold mt-1 mb-2">{w.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed max-w-md">{w.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* Daily Motivation & Monthly Review highlight */}
+        <section className="pb-32">
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="glass-card p-8 relative overflow-hidden group hover:glow transition-shadow duration-300"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-[60px] group-hover:bg-primary/10 transition-colors" />
+              <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center mb-5">
+                <MessageSquareHeart className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <h3 className="text-xl font-display font-bold mb-3">Daily AI Motivation</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                Wake up to a personalized insight based on your recent data. Not generic quotes — real, data-driven advice tailored to your patterns.
+              </p>
+              <div className="glass-card p-4 text-sm italic text-foreground/80">
+                <Sparkles className="h-4 w-4 text-primary inline mr-2" />
+                "You slept 1.5h more last night and your mood jumped 30%. Keep this bedtime — it's working."
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="glass-card p-8 relative overflow-hidden group hover:glow-accent transition-shadow duration-300"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-[60px] group-hover:bg-accent/10 transition-colors" />
+              <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center mb-5">
+                <CalendarCheck className="h-6 w-6 text-accent-foreground" />
+              </div>
+              <h3 className="text-xl font-display font-bold mb-3">Monthly Deep Review</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                Every month, get a comprehensive AI-generated report analyzing your trends, breakthroughs, and areas that need attention.
+              </p>
+              <div className="flex items-center gap-3 text-sm">
+                {["Mood Trends", "Sleep Analysis", "Goal Progress"].map((tag) => (
+                  <span key={tag} className="glass-card px-3 py-1 text-xs text-muted-foreground">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </section>
 
