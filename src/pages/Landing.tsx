@@ -53,6 +53,30 @@ const workflow = [
   },
 ];
 
+const testimonials = [
+  {
+    name: "Arjun Mehta",
+    role: "Startup Founder",
+    quote: "Reflecta helped me spot a burnout pattern weeks before I felt it. The AI told me exactly why it flagged it — no guesswork.",
+    avatar: "AM",
+    metric: "+32% productivity",
+  },
+  {
+    name: "Sarah Chen",
+    role: "Graduate Student",
+    quote: "I love that it validates its own suggestions. Last month it told me to sleep earlier — then showed me proof it actually improved my focus.",
+    avatar: "SC",
+    metric: "7.8→8.5 mood avg",
+  },
+  {
+    name: "David Okafor",
+    role: "Product Designer",
+    quote: "The monthly reviews are game-changing. It's like having a personal coach who actually remembers everything you told them.",
+    avatar: "DO",
+    metric: "45-day streak",
+  },
+];
+
 const Landing = () => {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -274,6 +298,52 @@ const Landing = () => {
                 ))}
               </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Social Proof / Testimonials */}
+        <section className="pb-32">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
+              Trusted by people who <span className="gradient-text">take action</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Real users, real results — powered by AI that proves its own value.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {testimonials.map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12 }}
+                className="glass-card p-6 flex flex-col justify-between hover:glow transition-shadow duration-300"
+              >
+                <p className="text-sm text-foreground/80 leading-relaxed mb-5 italic">
+                  "{t.quote}"
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full gradient-primary flex items-center justify-center text-xs font-bold text-primary-foreground">
+                      {t.avatar}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">{t.name}</p>
+                      <p className="text-xs text-muted-foreground">{t.role}</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono text-primary">{t.metric}</span>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </section>
 

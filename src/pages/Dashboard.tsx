@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { api } from "@/lib/api";
 import { LineChart, Line, ResponsiveContainer, Tooltip } from "recharts";
+import { useCountUp } from "@/hooks/use-count-up";
 
 const statIcons = [
   { key: "mood", label: "Mood", icon: Sparkles, suffix: "/10", color: "text-primary" },
@@ -47,23 +48,27 @@ const Dashboard = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {statIcons.map((stat) => (
-            <div key={stat.key} className="glass-card p-5">
-              {loading ? (
-                <Skeleton className="h-16 w-full" />
-              ) : (
-                <>
-                  <div className="flex items-center gap-2 mb-2">
-                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</span>
-                  </div>
-                  <p className="text-2xl font-display font-bold">
-                    {hasLogToday ? `${today[stat.key]}${stat.suffix}` : "—"}
-                  </p>
-                </>
-              )}
-            </div>
-          ))}
+          {statIcons.map((stat) => {
+            const raw = hasLogToday ? Number(today[stat.key]) : 0;
+            const countUp = useCountUp(raw, 1200, hasLogToday && !loading);
+            return (
+              <div key={stat.key} className="glass-card p-5" ref={countUp.ref}>
+                {loading ? (
+                  <Skeleton className="h-16 w-full" />
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 mb-2">
+                      <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</span>
+                    </div>
+                    <p className="text-2xl font-display font-bold">
+                      {hasLogToday ? `${countUp.value}${stat.suffix}` : "—"}
+                    </p>
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
