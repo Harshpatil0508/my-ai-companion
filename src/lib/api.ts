@@ -59,10 +59,10 @@ class ApiClient {
     return data;
   }
 
-  async register(email: string, password: string, full_name: string) {
+  async register(email: string, password: string, name: string) {
     return this.request<{ message: string }>("/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email, password, full_name }),
+      body: JSON.stringify({ email, password, name }),
     });
   }
 
@@ -75,23 +75,23 @@ class ApiClient {
     goal_completion: number;
     notes?: string;
   }) {
-    return this.request("/logs/", { method: "POST", body: JSON.stringify(log) });
+    return this.request("/daily-logs/", { method: "POST", body: JSON.stringify(log) });
   }
 
   async getLogs(skip = 0, limit = 10) {
-    return this.request<any[]>(`/logs/?skip=${skip}&limit=${limit}`);
+    return this.request<any[]>(`/daily-logs/?skip=${skip}&limit=${limit}`);
   }
 
   async getLogById(id: string) {
-    return this.request<any>(`/logs/${id}`);
+    return this.request<any>(`/daily-logs/${id}`);
   }
 
   async updateLog(id: string, log: any) {
-    return this.request(`/logs/${id}`, { method: "PUT", body: JSON.stringify(log) });
+    return this.request(`/daily-logs/${id}`, { method: "PUT", body: JSON.stringify(log) });
   }
 
   async deleteLog(id: string) {
-    return this.request(`/logs/${id}`, { method: "DELETE" });
+    return this.request(`/daily-logs/${id}`, { method: "DELETE" });
   }
 
   // Analytics
