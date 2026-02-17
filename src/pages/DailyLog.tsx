@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BookOpen, CheckCircle2 } from "lucide-react";
+import { BookOpen, CheckCircle2, Moon, Briefcase, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,41 +38,23 @@ const DailyLog = () => {
 
     try {
       await api.createLog(payload);
-
       setSuccess(true);
       setTimeout(() => navigate("/dashboard"), 1500);
     } catch (err: any) {
-      //  If log already exists
       if (err.message?.includes("already exists")) {
-        const confirmUpdate = window.confirm(
-          "Log for today already exists. Do you want to update it?",
-        );
-
+        const confirmUpdate = window.confirm("Log for today already exists. Do you want to update it?");
         if (confirmUpdate) {
           try {
             await api.updateTodayLog(payload);
-
-            toast({
-              title: "Updated",
-              description: "Today's log has been updated.",
-            });
-
+            toast({ title: "Updated", description: "Today's log has been updated." });
             setSuccess(true);
             setTimeout(() => navigate("/dashboard"), 1500);
           } catch (updateErr: any) {
-            toast({
-              title: "Update Failed",
-              description: updateErr.message,
-              variant: "destructive",
-            });
+            toast({ title: "Update Failed", description: updateErr.message, variant: "destructive" });
           }
         }
       } else {
-        toast({
-          title: "Error",
-          description: err.message,
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: err.message, variant: "destructive" });
       }
     } finally {
       setLoading(false);
@@ -87,53 +69,46 @@ const DailyLog = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center justify-center min-h-[60vh]"
         >
-          <CheckCircle2 className="h-16 w-16 text-primary mb-4" />
+          <div className="h-16 w-16 rounded-2xl gradient-primary flex items-center justify-center mb-4 glow">
+            <CheckCircle2 className="h-8 w-8 text-primary-foreground" />
+          </div>
           <h2 className="text-2xl font-display font-bold mb-2">Logged!</h2>
-          <p className="text-muted-foreground">Redirecting to dashboard...</p>
+          <p className="text-muted-foreground text-sm">Redirecting to dashboard...</p>
         </motion.div>
       </DashboardLayout>
     );
   }
 
+  const numberFields = [
+    { label: "Work Hours", value: workHours, set: setWorkHours, max: 24, icon: Briefcase, color: "text-primary" },
+    { label: "Study Hours", value: studyHours, set: setStudyHours, max: 24, icon: GraduationCap, color: "text-accent" },
+    { label: "Sleep Hours", value: sleepHours, set: setSleepHours, max: 24, icon: Moon, color: "text-primary" },
+  ];
+
   return (
     <DashboardLayout>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3 mb-8">
-          <BookOpen className="h-6 w-6 text-primary" />
-          <h1 className="text-3xl font-display font-bold">Daily Log</h1>
+          <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center">
+            <BookOpen className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight">Daily Log</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
+            </p>
+          </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="glass-card p-8 max-w-2xl space-y-6"
-        >
+        <form onSubmit={handleSubmit} className="glass-card-elevated p-6 sm:p-8 max-w-2xl space-y-6">
           {/* Number inputs */}
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              {
-                label: "Work Hours",
-                value: workHours,
-                set: setWorkHours,
-                max: 24,
-              },
-              {
-                label: "Study Hours",
-                value: studyHours,
-                set: setStudyHours,
-                max: 24,
-              },
-              {
-                label: "Sleep Hours",
-                value: sleepHours,
-                set: setSleepHours,
-                max: 24,
-              },
-            ].map((f) => (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {numberFields.map((f) => (
               <div key={f.label} className="space-y-2">
-                <Label>{f.label}</Label>
+                <Label className="text-xs font-medium flex items-center gap-1.5">
+                  <f.icon className={`h-3.5 w-3.5 ${f.color}`} />
+                  {f.label}
+                </Label>
                 <Input
                   type="number"
                   min={0}
@@ -141,69 +116,49 @@ const DailyLog = () => {
                   step={0.5}
                   value={f.value}
                   onChange={(e) => f.set(Number(e.target.value))}
-                  className="bg-secondary/50 border-border/50"
+                  className="bg-secondary/40 border-border/40 h-11"
                 />
               </div>
             ))}
           </div>
 
           {/* Mood slider */}
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <Label>Mood</Label>
-              <span className="text-sm font-medium text-primary">
-                {mood}/10
-              </span>
+          <div className="glass-card p-5 space-y-3">
+            <div className="flex justify-between items-center">
+              <Label className="text-xs font-medium">Mood Score</Label>
+              <span className="text-sm font-display font-bold text-primary">{mood}/10</span>
             </div>
-            <Slider
-              min={1}
-              max={10}
-              step={1}
-              value={[mood]}
-              onValueChange={([v]) => setMood(v)}
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>😔</span>
-              <span>😊</span>
-              <span>🤩</span>
+            <Slider min={1} max={10} step={1} value={[mood]} onValueChange={([v]) => setMood(v)} />
+            <div className="flex justify-between text-xs text-muted-foreground px-1">
+              <span>😔 Low</span>
+              <span>😊 Good</span>
+              <span>🤩 Great</span>
             </div>
           </div>
 
           {/* Goal slider */}
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <Label>Goal Completion</Label>
-              <span className="text-sm font-medium text-accent">
-                {goalCompletion}%
-              </span>
+          <div className="glass-card p-5 space-y-3">
+            <div className="flex justify-between items-center">
+              <Label className="text-xs font-medium">Goal Completion</Label>
+              <span className="text-sm font-display font-bold text-accent">{goalCompletion}%</span>
             </div>
-            <Slider
-              min={0}
-              max={100}
-              step={5}
-              value={[goalCompletion]}
-              onValueChange={([v]) => setGoalCompletion(v)}
-            />
+            <Slider min={0} max={100} step={5} value={[goalCompletion]} onValueChange={([v]) => setGoalCompletion(v)} />
           </div>
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label>Notes (optional)</Label>
+            <Label className="text-xs font-medium">Notes (optional)</Label>
             <Textarea
-              placeholder="How was your day?"
+              placeholder="How was your day? Any highlights or challenges?"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="bg-secondary/50 border-border/50 min-h-[100px]"
+              className="bg-secondary/40 border-border/40 min-h-[100px] resize-none"
             />
           </div>
 
-          <Button
-            type="submit"
-            className="w-full gradient-primary glow h-11"
-            disabled={loading}
-          >
+          <Button type="submit" className="w-full gradient-primary glow h-11 font-medium" disabled={loading}>
             {loading ? (
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
             ) : (
               "Save Today's Log"
             )}

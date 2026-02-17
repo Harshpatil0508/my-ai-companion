@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Activity, Mail, Lock, User, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,33 +40,64 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 grid-pattern opacity-20" />
-      <div className="absolute top-[-30%] right-[-20%] w-[600px] h-[600px] rounded-full bg-primary/8 blur-[120px]" />
-      <div className="absolute bottom-[-30%] left-[-20%] w-[500px] h-[500px] rounded-full bg-accent/8 blur-[120px]" />
+      {/* Background */}
+      <div className="absolute inset-0 grid-pattern opacity-15" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] rounded-full bg-primary/6 blur-[150px]" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-accent/4 blur-[150px]" />
 
+      {/* Left branding panel — hidden on mobile */}
+      <div className="hidden lg:flex flex-1 items-center justify-center p-12 relative">
+        <div className="max-w-md">
+          <Link to="/" className="flex items-center gap-2.5 mb-10">
+            <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center">
+              <Activity className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="text-2xl font-display font-bold tracking-tight">Reflecta</span>
+          </Link>
+          <h2 className="text-3xl font-display font-bold mb-4 leading-tight">
+            AI that's <span className="gradient-text">accountable</span>,
+            <br />not just intelligent
+          </h2>
+          <p className="text-muted-foreground leading-relaxed mb-8">
+            Track your daily habits, get AI-driven insights with full transparency,
+            and watch as the system validates its own advice.
+          </p>
+          <div className="space-y-3">
+            {["Explainable AI recommendations", "Self-validating predictions", "Deep monthly analytics"].map((feature) => (
+              <div key={feature} className="flex items-center gap-3 text-sm text-muted-foreground">
+                <Sparkles className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                {feature}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Right form panel */}
       <div className="relative z-10 flex flex-1 items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
+          className="w-full max-w-sm"
         >
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 mb-10 justify-center">
-            <Activity className="h-7 w-7 text-primary" />
+          {/* Mobile logo */}
+          <Link to="/" className="flex items-center gap-2 mb-8 justify-center lg:hidden">
+            <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
+              <Activity className="h-4 w-4 text-primary-foreground" />
+            </div>
             <span className="text-xl font-display font-bold">Reflecta</span>
           </Link>
 
-          <div className="glass-card p-8">
+          <div className="glass-card-elevated p-7 sm:p-8">
             <AnimatePresence mode="wait">
               <motion.div
                 key={isRegister ? "register" : "login"}
-                initial={{ opacity: 0, x: isRegister ? 20 : -20 }}
+                initial={{ opacity: 0, x: isRegister ? 15 : -15 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: isRegister ? -20 : 20 }}
+                exit={{ opacity: 0, x: isRegister ? -15 : 15 }}
                 transition={{ duration: 0.2 }}
               >
-                <h1 className="text-2xl font-display font-bold mb-1">
+                <h1 className="text-xl font-display font-bold mb-1">
                   {isRegister ? "Create your account" : "Welcome back"}
                 </h1>
                 <p className="text-sm text-muted-foreground mb-6">
@@ -77,8 +108,8 @@ const Auth = () => {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {isRegister && (
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="name" className="text-xs font-medium">Full Name</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -86,15 +117,15 @@ const Auth = () => {
                           placeholder="Your name"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
-                          className="pl-10 bg-secondary/50 border-border/50"
+                          className="pl-10 bg-secondary/40 border-border/40 h-11"
                           required
                         />
                       </div>
                     </div>
                   )}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-xs font-medium">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -103,14 +134,14 @@ const Auth = () => {
                         placeholder="you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10 bg-secondary/50 border-border/50"
+                        className="pl-10 bg-secondary/40 border-border/40 h-11"
                         required
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="password" className="text-xs font-medium">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -119,7 +150,7 @@ const Auth = () => {
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10 bg-secondary/50 border-border/50"
+                        className="pl-10 bg-secondary/40 border-border/40 h-11"
                         required
                       />
                     </div>
@@ -127,11 +158,11 @@ const Auth = () => {
 
                   <Button
                     type="submit"
-                    className="w-full gradient-primary glow h-11"
+                    className="w-full gradient-primary glow h-11 font-medium"
                     disabled={loading}
                   >
                     {loading ? (
-                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                     ) : (
                       <>
                         {isRegister ? "Create Account" : "Sign In"}
