@@ -87,7 +87,7 @@ const Landing = () => {
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-accent/10 blur-[120px] animate-pulse-glow" />
 
       {/* Nav */}
-      <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
+      <nav className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
           <Activity className="h-7 w-7 text-primary" />
           <span className="text-xl font-display font-bold tracking-tight">Reflecta</span>
@@ -103,7 +103,7 @@ const Landing = () => {
       </nav>
 
       {/* Hero */}
-      <main className="relative z-10 max-w-7xl mx-auto px-6">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
         <section className="pt-20 pb-32 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -115,7 +115,7 @@ const Landing = () => {
               AI-Powered Personal Tracking
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-display font-bold leading-tight mb-6 max-w-4xl mx-auto">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-display font-bold leading-tight mb-6 max-w-4xl mx-auto">
               AI that's{" "}
               <span className="gradient-text">accountable</span>
               , not just intelligent
@@ -153,9 +153,9 @@ const Landing = () => {
                   <div className="h-3 w-3 rounded-full bg-primary/70" />
                   <span className="ml-2 text-xs text-muted-foreground">reflecta — dashboard</span>
                 </div>
-                <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {["Mood: 8/10", "Sleep: 7.5h", "Work: 6h", "Goals: 85%"].map((stat) => (
-                    <div key={stat} className="glass-card p-4 text-center">
+                    <div key={stat} className="glass-card p-3 sm:p-4 text-center">
                       <p className="text-sm text-muted-foreground">{stat.split(":")[0]}</p>
                       <p className="text-lg font-bold text-primary mt-1">{stat.split(": ")[1]}</p>
                     </div>
