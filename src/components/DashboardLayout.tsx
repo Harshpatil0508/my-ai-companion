@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Activity, LayoutDashboard, PenSquare, Brain, BarChart3, LogOut, Settings } from "lucide-react";
+import { Activity, LayoutDashboard, PenSquare, Brain, BarChart3, LogOut, Settings, Menu, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -14,46 +16,81 @@ const navItems = [
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
   const { logout } = useAuth();
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const sidebar = (
+    <>
+      <Link to="/dashboard" className="flex items-center gap-2 px-3 py-2 mb-8" onClick={() => setSidebarOpen(false)}>
+        <Activity className="h-6 w-6 text-primary" />
+        <span className="text-lg font-display font-bold">Reflecta</span>
+      </Link>
+
+      <nav className="space-y-1 flex-1">
+        {navItems.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            onClick={() => setSidebarOpen(false)}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
+              pathname === item.to
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            )}
+          >
+            <item.icon className="h-4 w-4" />
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+
+      <button
+        onClick={() => { logout(); setSidebarOpen(false); }}
+        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+      >
+        <LogOut className="h-4 w-4" />
+        Sign Out
+      </button>
+    </>
+  );
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen w-full bg-background flex">
+      {/* Mobile header */}
+      {isMobile && (
+        <header className="fixed top-0 left-0 right-0 z-50 glass flex items-center justify-between px-4 py-3">
+          <Link to="/dashboard" className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-primary" />
+            <span className="font-display font-bold">Reflecta</span>
+          </Link>
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-foreground p-1">
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </header>
+      )}
+
+      {/* Mobile overlay */}
+      {isMobile && sidebarOpen && (
+        <div className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 border-r border-border/50 p-4 flex flex-col glass sticky top-0 h-screen">
-        <Link to="/dashboard" className="flex items-center gap-2 px-3 py-2 mb-8">
-          <Activity className="h-6 w-6 text-primary" />
-          <span className="text-lg font-display font-bold">Reflecta</span>
-        </Link>
-
-        <nav className="space-y-1 flex-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
-                pathname === item.to
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <button
-          onClick={logout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </button>
+      <aside
+        className={cn(
+          "flex flex-col glass",
+          isMobile
+            ? "fixed top-0 left-0 z-50 h-full w-64 p-4 pt-16 transition-transform duration-300"
+            : "w-64 border-r border-border/50 p-4 sticky top-0 h-screen",
+          isMobile && !sidebarOpen && "-translate-x-full"
+        )}
+      >
+        {sidebar}
       </aside>
 
       {/* Main */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-5xl mx-auto">{children}</div>
+      <main className={cn("flex-1 p-4 md:p-8 overflow-y-auto w-full", isMobile && "pt-16")}>
+        <div className="max-w-5xl mx-auto w-full">{children}</div>
       </main>
     </div>
   );
