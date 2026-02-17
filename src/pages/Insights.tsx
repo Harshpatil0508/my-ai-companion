@@ -38,7 +38,7 @@ export default function Insights() {
   };
 
   const getIndicator = (change: string) => {
-    if (change === "improved") return <TrendingUp className="h-4 w-4 text-primary" />;
+    if (change === "improved") return <TrendingUp className="h-4 w-4 text-success" />;
     if (change === "declined") return <TrendingDown className="h-4 w-4 text-destructive" />;
     return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
@@ -47,40 +47,52 @@ export default function Insights() {
     <DashboardLayout>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3 mb-8">
-          <Brain className="h-6 w-6 text-accent" />
-          <h1 className="text-3xl font-display font-bold">AI Insights</h1>
+          <div className="h-10 w-10 rounded-xl bg-accent/15 flex items-center justify-center">
+            <Brain className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight">AI Insights</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Personalized analysis & motivation</p>
+          </div>
         </div>
 
         {/* Validation */}
-        <div className="glass-card p-6 mb-8 glow-accent">
-          <h2 className="font-display font-semibold mb-4">AI Validation</h2>
+        <div className="glass-card-elevated p-6 mb-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-accent/5 rounded-full blur-[80px]" />
+          <div className="relative">
+            <h2 className="font-display font-semibold mb-4 flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              AI Validation
+            </h2>
 
-          {loading ? (
-            <Skeleton className="h-20 w-full" />
-          ) : validation ? (
-            <div className="grid grid-cols-3 gap-4">
-              {Object.entries(validation.metrics || {}).map(([k, v]: any) => (
-                <div key={k} className="glass-card p-4 text-center">
-                  <p className="text-xs uppercase text-muted-foreground">{k.replace("_", " ")}</p>
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="text-lg font-bold">{v.after ?? "—"}</span>
-                    {getIndicator(v.change)}
+            {loading ? (
+              <Skeleton className="h-20 w-full" />
+            ) : validation ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {Object.entries(validation.metrics || {}).map(([k, v]: any) => (
+                  <div key={k} className="glass-card p-4 text-center">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">{k.replace("_", " ")}</p>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-xl font-display font-bold">{v.after ?? "—"}</span>
+                      {getIndicator(v.change)}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">was {v.before ?? "—"}</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">was {v.before ?? "—"}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Not enough data yet. Keep logging daily.
-            </p>
-          )}
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Not enough data yet. Keep logging daily.</p>
+            )}
+          </div>
         </div>
 
-        {/* Real Insights */}
-        <h2 className="font-display font-semibold mb-4">Daily Motivations</h2>
+        {/* Insights */}
+        <h2 className="font-display font-semibold mb-4 flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          Daily Motivations
+        </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {loading ? (
             <Skeleton className="h-32 w-full" />
           ) : insights.length ? (
@@ -90,28 +102,28 @@ export default function Insights() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="glass-card p-6"
+                className="glass-card-elevated p-5 sm:p-6"
               >
                 <div className="flex justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium mb-2">{insight.message}</p>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium mb-2 leading-relaxed">{insight.message}</p>
                     {insight.reasoning && (
                       <p className="text-xs text-muted-foreground">
-                        <span className="text-primary">Why:</span> {insight.reasoning}
+                        <span className="text-primary font-medium">Why:</span> {insight.reasoning}
                       </p>
                     )}
-                    <p className="text-xs text-muted-foreground mt-2">{insight.date}</p>
+                    <p className="text-[10px] text-muted-foreground mt-3 font-mono">{insight.date}</p>
                   </div>
 
                   {feedbackGiven[insight.id] ? (
-                    <span className="text-xs text-muted-foreground">Thanks!</span>
+                    <span className="text-xs text-muted-foreground self-start pt-1">Thanks!</span>
                   ) : (
-                    <div className="flex gap-1">
-                      <Button size="icon" variant="ghost" onClick={() => handleFeedback(insight.id, true)}>
-                        <ThumbsUp className="h-4 w-4" />
+                    <div className="flex gap-1 self-start">
+                      <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-success/10 hover:text-success" onClick={() => handleFeedback(insight.id, true)}>
+                        <ThumbsUp className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="icon" variant="ghost" onClick={() => handleFeedback(insight.id, false)}>
-                        <ThumbsDown className="h-4 w-4" />
+                      <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => handleFeedback(insight.id, false)}>
+                        <ThumbsDown className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   )}
@@ -119,7 +131,10 @@ export default function Insights() {
               </motion.div>
             ))
           ) : (
-            <p className="text-sm text-muted-foreground">No insights yet.</p>
+            <div className="glass-card p-8 text-center">
+              <Brain className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">No insights yet. Start logging to get personalized motivation.</p>
+            </div>
           )}
         </div>
       </motion.div>
