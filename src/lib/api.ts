@@ -1,5 +1,7 @@
 import type { UserProfile } from "@/types/user";
 import type { MonthlyAnalytics } from "@/types/analytics";
+import { promises } from "dns";
+import { TodayInsight } from "@/hooks/use-ai";
 const API_BASE_URL = "http://localhost:8000";
 
 class ApiClient {
@@ -54,7 +56,7 @@ class ApiClient {
       throw new Error(err.detail || "Request failed");
     }
 
-    return res.json();
+    return res.json() as Promise<T>;
   }
 
   // Auth
@@ -182,21 +184,20 @@ class ApiClient {
   }
 
   // AI Motivations / Insights
-  // AI
 
-  async getInsights(page = 0, limit = 5) {
-    return this.request(`/ai/motivations?page=${page}&limit=${limit}`);
-  }
-
-  async submitFeedback(motivationId: string, helpful: boolean) {
-    return this.request("/ai/feedback", {
-      method: "POST",
-      body: JSON.stringify({
-        motivation_id: motivationId,
-        helpful,
-      }),
-    });
-  }
+  async getTodayInsight(): Promise<TodayInsight> {
+  return this.request<TodayInsight>("/daily-ai-motivation/today");
+}
+  async submitFeedback(sourceId: number, isHelpful: boolean) {
+  return this.request("/ai/feedback", {
+    method: "POST",
+    body: JSON.stringify({
+      source: "daily_motivation", 
+      source_id: sourceId,
+      is_helpful: isHelpful,
+    }),
+  });
+}
 
   getMe(): Promise<UserProfile> {
     return this.request("/users/me");

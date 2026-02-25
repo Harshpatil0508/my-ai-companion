@@ -1,18 +1,41 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { User, Bell, Shield, Save, Eye, EyeOff, Upload, Sun, Moon, Monitor, Palette } from "lucide-react";
+import {
+  User,
+  Bell,
+  Shield,
+  Save,
+  Eye,
+  EyeOff,
+  Upload,
+  Sun,
+  Moon,
+  Monitor,
+  Palette,
+} from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
 import { api } from "@/lib/api";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export default function Settings() {
   const { toast } = useToast();
@@ -33,11 +56,18 @@ export default function Settings() {
   const [monthlyReview, setMonthlyReview] = useState(true);
   const [aiMotivation, setAiMotivation] = useState(true);
 
+  // =============================
+  // LOAD USER DATA
+  // =============================
   useEffect(() => {
     api.getMe().then((u) => {
       setFullName(u.name);
       setEmail(u.email);
-      setAvatar(u.avatar_url);
+
+      if (u.avatar_url) {
+        setAvatar(`${API_BASE}${u.avatar_url}?t=${Date.now()}`);
+      }
+
       setDailyReminder(u.daily_reminder);
       setWeeklyDigest(u.weekly_digest);
       setMonthlyReview(u.monthly_review);
@@ -45,6 +75,9 @@ export default function Settings() {
     });
   }, []);
 
+  // =============================
+  // PROFILE UPDATE
+  // =============================
   const handleSaveProfile = async () => {
     if (!fullName.trim()) return;
     setSaving(true);
@@ -53,35 +86,54 @@ export default function Settings() {
     toast({ title: "Profile updated" });
   };
 
+  // =============================
+  // PASSWORD UPDATE
+  // =============================
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
       toast({ title: "Passwords don't match", variant: "destructive" });
       return;
     }
+
     setSaving(true);
     await api.changePassword(currentPassword, newPassword);
     setSaving(false);
+
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
+
     toast({ title: "Password updated" });
   };
 
+  // =============================
+  // PREFERENCES UPDATE
+  // =============================
   const handleSavePreferences = async () => {
     setSaving(true);
+
     await api.updatePreferences({
       daily_reminder: dailyReminder,
       weekly_digest: weeklyDigest,
       monthly_review: monthlyReview,
       ai_motivation: aiMotivation,
     });
+
     setSaving(false);
     toast({ title: "Preferences saved" });
   };
 
+  // =============================
+  // AVATAR UPLOAD (FIXED)
+  // =============================
   const uploadAvatar = async (file: File) => {
     const res = await api.uploadAvatar(file);
-    setAvatar(res.avatar_url);
+
+    const fullUrl = `${API_BASE}${res.avatar_url}`;
+    const cacheBusted = `${fullUrl}?t=${Date.now()}`;
+
+    setAvatar(cacheBusted);
+
     toast({ title: "Avatar updated" });
   };
 
@@ -95,82 +147,127 @@ export default function Settings() {
   return (
     <DashboardLayout>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight mb-8">Settings</h1>
+        <h1 className="text-2xl sm:text-3xl font-display font-bold tracking-tight mb-8">
+          Settings
+        </h1>
 
         <Tabs defaultValue="profile">
           <TabsList className="glass-card mb-6 p-1">
-            <TabsTrigger value="profile" className="gap-1.5 text-xs sm:text-sm">
-              <User className="h-3.5 w-3.5" />Profile
+            <TabsTrigger value="profile">
+              <User className="h-4 w-4 mr-1" /> Profile
             </TabsTrigger>
-            <TabsTrigger value="security" className="gap-1.5 text-xs sm:text-sm">
-              <Shield className="h-3.5 w-3.5" />Security
+            <TabsTrigger value="security">
+              <Shield className="h-4 w-4 mr-1" /> Security
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-1.5 text-xs sm:text-sm">
-              <Bell className="h-3.5 w-3.5" />Notifications
+            <TabsTrigger value="notifications">
+              <Bell className="h-4 w-4 mr-1" /> Notifications
             </TabsTrigger>
-            <TabsTrigger value="appearance" className="gap-1.5 text-xs sm:text-sm">
-              <Palette className="h-3.5 w-3.5" />Appearance
+            <TabsTrigger value="appearance">
+              <Palette className="h-4 w-4 mr-1" /> Appearance
             </TabsTrigger>
           </TabsList>
 
           {/* PROFILE */}
           <TabsContent value="profile">
-            <div className="glass-card-elevated p-6 sm:p-8 space-y-6 max-w-lg">
+            <div className="glass-card-elevated p-6 space-y-6 max-w-lg">
               <div className="flex items-center gap-5">
-                <Avatar className="h-16 w-16 ring-2 ring-border/30 ring-offset-2 ring-offset-background">
-                  {avatar && <AvatarImage src={avatar} />}
-                  <AvatarFallback className="gradient-primary text-primary-foreground font-display font-bold">{initials}</AvatarFallback>
+                <Avatar className="h-16 w-16">
+                  {avatar && (
+                    <AvatarImage src={avatar} key={avatar} />
+                  )}
+                  <AvatarFallback className="gradient-primary text-primary-foreground font-bold">
+                    {initials}
+                  </AvatarFallback>
                 </Avatar>
+
                 <label className="cursor-pointer text-sm text-primary flex items-center gap-2 font-medium hover:underline">
                   <Upload className="h-4 w-4" />
                   Change avatar
-                  <input hidden type="file" accept="image/*" onChange={(e) => e.target.files && uploadAvatar(e.target.files[0])} />
+                  <input
+                    hidden
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      e.target.files &&
+                      uploadAvatar(e.target.files[0])
+                    }
+                  />
                 </label>
               </div>
 
-              <Separator className="bg-border/30" />
+              <Separator />
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Full Name</Label>
-                <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="bg-secondary/40 border-border/40 h-11" />
+              <div>
+                <Label>Full Name</Label>
+                <Input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Email</Label>
-                <Input value={email} disabled className="bg-secondary/20 border-border/20 h-11 text-muted-foreground" />
+              <div>
+                <Label>Email</Label>
+                <Input value={email} disabled />
               </div>
 
-              <Button onClick={handleSaveProfile} disabled={saving} className="gradient-primary glow font-medium h-10">
-                <Save className="h-4 w-4 mr-2" /> Save Changes
+              <Button
+                onClick={handleSaveProfile}
+                disabled={saving}
+                className="gradient-primary"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
               </Button>
             </div>
           </TabsContent>
 
           {/* SECURITY */}
           <TabsContent value="security">
-            <div className="glass-card-elevated p-6 sm:p-8 space-y-5 max-w-lg">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Current Password</Label>
-                <Input type={showPasswords ? "text" : "password"} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="bg-secondary/40 border-border/40 h-11" />
-              </div>
+            <div className="glass-card-elevated p-6 space-y-4 max-w-lg">
+              <Input
+                type={showPasswords ? "text" : "password"}
+                placeholder="Current Password"
+                value={currentPassword}
+                onChange={(e) =>
+                  setCurrentPassword(e.target.value)
+                }
+              />
+              <Input
+                type={showPasswords ? "text" : "password"}
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <Input
+                type={showPasswords ? "text" : "password"}
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) =>
+                  setConfirmPassword(e.target.value)
+                }
+              />
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">New Password</Label>
-                <Input type={showPasswords ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="bg-secondary/40 border-border/40 h-11" />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Confirm Password</Label>
-                <Input type={showPasswords ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="bg-secondary/40 border-border/40 h-11" />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Button variant="ghost" size="sm" onClick={() => setShowPasswords(!showPasswords)} className="text-xs text-muted-foreground gap-1.5">
-                  {showPasswords ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  {showPasswords ? "Hide" : "Show"} passwords
+              <div className="flex justify-between items-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setShowPasswords(!showPasswords)
+                  }
+                >
+                  {showPasswords ? (
+                    <EyeOff className="h-4 w-4 mr-1" />
+                  ) : (
+                    <Eye className="h-4 w-4 mr-1" />
+                  )}
+                  {showPasswords ? "Hide" : "Show"}
                 </Button>
-                <Button onClick={handleChangePassword} disabled={saving} className="gradient-primary glow font-medium h-10">
-                  <Shield className="h-4 w-4 mr-2" /> Update
+
+                <Button
+                  onClick={handleChangePassword}
+                  disabled={saving}
+                >
+                  Update
                 </Button>
               </div>
             </div>
@@ -178,57 +275,56 @@ export default function Settings() {
 
           {/* NOTIFICATIONS */}
           <TabsContent value="notifications">
-            <div className="glass-card-elevated p-6 sm:p-8 space-y-1 max-w-lg">
-              {([
-                ["Daily Reminder", "Get reminded to log your day", dailyReminder, setDailyReminder],
-                ["Weekly Digest", "Weekly summary of your progress", weeklyDigest, setWeeklyDigest],
-                ["Monthly Review", "In-depth monthly AI analysis", monthlyReview, setMonthlyReview],
-                ["AI Motivation", "Daily motivational messages", aiMotivation, setAiMotivation],
-              ] as const).map(([label, desc, value, set]: any) => (
-                <div key={label} className="flex items-center justify-between py-4 border-b border-border/20 last:border-0">
-                  <div>
-                    <p className="text-sm font-medium">{label}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
-                  </div>
-                  <Switch checked={value} onCheckedChange={set} />
+            <div className="glass-card-elevated p-6 space-y-4 max-w-lg">
+              {[
+                ["Daily Reminder", dailyReminder, setDailyReminder],
+                ["Weekly Digest", weeklyDigest, setWeeklyDigest],
+                ["Monthly Review", monthlyReview, setMonthlyReview],
+                ["AI Motivation", aiMotivation, setAiMotivation],
+              ].map(([label, value, set]: any) => (
+                <div
+                  key={label}
+                  className="flex justify-between items-center"
+                >
+                  <span>{label}</span>
+                  <Switch
+                    checked={value}
+                    onCheckedChange={set}
+                  />
                 </div>
               ))}
 
-              <div className="pt-4">
-                <Button onClick={handleSavePreferences} disabled={saving} className="gradient-primary glow font-medium h-10">
-                  <Save className="h-4 w-4 mr-2" /> Save Preferences
-                </Button>
-              </div>
+              <Button
+                onClick={handleSavePreferences}
+                disabled={saving}
+              >
+                Save Preferences
+              </Button>
             </div>
           </TabsContent>
 
           {/* APPEARANCE */}
           <TabsContent value="appearance">
-            <div className="glass-card-elevated p-6 sm:p-8 space-y-6 max-w-lg">
-              <div>
-                <h3 className="text-sm font-semibold mb-1">Theme</h3>
-                <p className="text-xs text-muted-foreground mb-4">Choose how Reflecta looks for you</p>
-                <div className="grid grid-cols-3 gap-3">
-                  {([
-                    { value: "light" as const, icon: Sun, label: "Light" },
-                    { value: "dark" as const, icon: Moon, label: "Dark" },
-                    { value: "system" as const, icon: Monitor, label: "System" },
-                  ]).map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setTheme(opt.value)}
-                      className={cn(
-                        "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200",
-                        theme === opt.value
-                          ? "border-primary bg-primary/10 text-primary shadow-[0_0_20px_-4px_hsl(var(--primary)/0.2)]"
-                          : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border/60 hover:bg-secondary/30"
-                      )}
-                    >
-                      <opt.icon className="h-5 w-5" />
-                      <span className="text-xs font-medium">{opt.label}</span>
-                    </button>
-                  ))}
-                </div>
+            <div className="glass-card-elevated p-6 max-w-lg">
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { value: "light", icon: Sun },
+                  { value: "dark", icon: Moon },
+                  { value: "system", icon: Monitor },
+                ].map((opt: any) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setTheme(opt.value)}
+                    className={cn(
+                      "p-4 rounded-xl border",
+                      theme === opt.value
+                        ? "border-primary bg-primary/10"
+                        : "border-border"
+                    )}
+                  >
+                    <opt.icon className="h-5 w-5 mx-auto" />
+                  </button>
+                ))}
               </div>
             </div>
           </TabsContent>
