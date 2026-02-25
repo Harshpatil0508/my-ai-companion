@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Brain, Shield, BarChart3, Sparkles, ArrowRight, Activity, Target, MessageSquareHeart, CalendarCheck, ChevronRight, Zap, Star, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
+import BackgroundAnimation from "@/components/BackgroundAnimation";
 
 const features = [
   {
@@ -97,10 +98,9 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Ambient background */}
-      <div className="fixed inset-0 grid-pattern opacity-20 pointer-events-none" />
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] rounded-full bg-primary/6 blur-[150px] pointer-events-none" />
-      <div className="fixed bottom-0 right-0 w-[600px] h-[600px] rounded-full bg-accent/5 blur-[150px] pointer-events-none" />
+      {/* Animated background */}
+      <BackgroundAnimation />
+      <div className="fixed inset-0 grid-pattern opacity-10 pointer-events-none z-[1]" />
 
       {/* Nav */}
       <nav className="sticky top-0 z-50 glass border-b border-border/30">
