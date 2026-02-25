@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Brain, Shield, BarChart3, Sparkles, ArrowRight, Activity, Target, MessageSquareHeart, CalendarCheck, ChevronRight, Zap, Star, Check } from "lucide-react";
+import { Brain, Shield, BarChart3, Sparkles, ArrowRight, Activity, Target, MessageSquareHeart, CalendarCheck, ChevronRight, Zap, Star, Check, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 import BackgroundAnimation from "@/components/BackgroundAnimation";
 
 const features = [
@@ -92,6 +93,7 @@ const stats = [
 
 const Landing = () => {
   const heroRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme, setTheme } = useTheme();
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
@@ -112,6 +114,13 @@ const Landing = () => {
             <span className="text-lg font-display font-bold tracking-tight">Reflecta</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all duration-200"
+              aria-label="Toggle theme"
+            >
+              {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" asChild>
               <Link to="/auth">Log In</Link>
             </Button>
