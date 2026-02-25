@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { User, Bell, Shield, Save, Eye, EyeOff, Upload } from "lucide-react";
+import { User, Bell, Shield, Save, Eye, EyeOff, Upload, Sun, Moon, Monitor, Palette } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +11,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { api } from "@/lib/api";
+import { useTheme } from "@/contexts/ThemeContext";
+import { cn } from "@/lib/utils";
 
 export default function Settings() {
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   const [saving, setSaving] = useState(false);
 
   const [fullName, setFullName] = useState("");
@@ -105,6 +108,9 @@ export default function Settings() {
             <TabsTrigger value="notifications" className="gap-1.5 text-xs sm:text-sm">
               <Bell className="h-3.5 w-3.5" />Notifications
             </TabsTrigger>
+            <TabsTrigger value="appearance" className="gap-1.5 text-xs sm:text-sm">
+              <Palette className="h-3.5 w-3.5" />Appearance
+            </TabsTrigger>
           </TabsList>
 
           {/* PROFILE */}
@@ -192,6 +198,37 @@ export default function Settings() {
                 <Button onClick={handleSavePreferences} disabled={saving} className="gradient-primary glow font-medium h-10">
                   <Save className="h-4 w-4 mr-2" /> Save Preferences
                 </Button>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* APPEARANCE */}
+          <TabsContent value="appearance">
+            <div className="glass-card-elevated p-6 sm:p-8 space-y-6 max-w-lg">
+              <div>
+                <h3 className="text-sm font-semibold mb-1">Theme</h3>
+                <p className="text-xs text-muted-foreground mb-4">Choose how Reflecta looks for you</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {([
+                    { value: "light" as const, icon: Sun, label: "Light" },
+                    { value: "dark" as const, icon: Moon, label: "Dark" },
+                    { value: "system" as const, icon: Monitor, label: "System" },
+                  ]).map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setTheme(opt.value)}
+                      className={cn(
+                        "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200",
+                        theme === opt.value
+                          ? "border-primary bg-primary/10 text-primary shadow-[0_0_20px_-4px_hsl(var(--primary)/0.2)]"
+                          : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border/60 hover:bg-secondary/30"
+                      )}
+                    >
+                      <opt.icon className="h-5 w-5" />
+                      <span className="text-xs font-medium">{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </TabsContent>
