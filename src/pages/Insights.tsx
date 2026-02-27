@@ -7,12 +7,16 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  Sparkles,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { format, parseISO } from "date-fns";
 
 /* ================= TYPES ================= */
 
@@ -21,6 +25,12 @@ interface TodayInsight {
   insight: string;
   date: string;
   feedbackGiven: boolean;
+}
+
+interface MotivationEntry {
+  id: number;
+  insight: string;
+  date: string;
 }
 
 interface ValidationMetric {
@@ -38,6 +48,7 @@ interface ValidationResponse {
 export default function Insights() {
   const [validation, setValidation] = useState<ValidationResponse | null>(null);
   const [insight, setInsight] = useState<TodayInsight | null>(null);
+  const [allMotivations, setAllMotivations] = useState<MotivationEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedbackGiven, setFeedbackGiven] = useState(false);
   const { toast } = useToast();
@@ -46,8 +57,9 @@ export default function Insights() {
     Promise.all([
       api.getValidation().catch(() => null),
       api.getTodayInsight().catch(() => null),
+      api.getAllMotivations().catch(() => []),
     ])
-      .then(([validationRes, insightRes]) => {
+      .then(([validationRes, insightRes, motivationsRes]) => {
         if (validationRes) {
           setValidation(validationRes as ValidationResponse);
         }
@@ -56,6 +68,10 @@ export default function Insights() {
           const typedInsight = insightRes as TodayInsight;
           setInsight(typedInsight);
           setFeedbackGiven(typedInsight.feedbackGiven);
+        }
+
+        if (motivationsRes && Array.isArray(motivationsRes)) {
+          setAllMotivations(motivationsRes);
         }
       })
       .finally(() => setLoading(false));
@@ -66,10 +82,7 @@ export default function Insights() {
 
     try {
       await api.submitFeedback(insight.id, helpful);
-
-      // instant UI update
       setFeedbackGiven(true);
-
       toast({
         title: helpful ? "Thanks! 👍" : "Noted. We'll improve.",
       });
@@ -78,7 +91,6 @@ export default function Insights() {
         title: "Saved locally",
         description: "Will sync later.",
       });
-
       setFeedbackGiven(true);
     }
   };
@@ -89,6 +101,14 @@ export default function Insights() {
     if (change === "declined")
       return <TrendingDown className="h-4 w-4 text-destructive" />;
     return <Minus className="h-4 w-4 text-muted-foreground" />;
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return format(parseISO(dateStr), "MMM d, yyyy");
+    } catch {
+      return dateStr;
+    }
   };
 
   return (
@@ -204,6 +224,61 @@ export default function Insights() {
             </p>
           </div>
         )}
+
+        {/* ALL MOTIVATIONS HISTORY */}
+        <div className="mt-10">
+          <h2 className="font-display font-semibold mb-4 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            <Sparkles className="h-4 w-4 text-accent" />
+            Motivation History
+          </h2>
+
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-20 w-full" />
+              ))}
+            </div>
+          ) : allMotivations.length > 0 ? (
+            <ScrollArea className="h-[400px] pr-2">
+              <div className="space-y-3">
+                {allMotivations.map((m, index) => (
+                  <motion.div
+                    key={m.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.04, duration: 0.3 }}
+                    className="glass-card p-4 group hover:border-accent/30 transition-colors"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <Brain className="h-3.5 w-3.5 text-accent" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm leading-relaxed text-foreground">
+                          {m.insight}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <Calendar className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-[10px] font-mono text-muted-foreground">
+                            {formatDate(m.date)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </ScrollArea>
+          ) : (
+            <div className="glass-card p-8 text-center">
+              <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">
+                No motivations yet. They'll appear here as you log daily.
+              </p>
+            </div>
+          )}
+        </div>
       </motion.div>
     </DashboardLayout>
   );

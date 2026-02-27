@@ -186,8 +186,12 @@ class ApiClient {
   // AI Motivations / Insights
 
   async getTodayInsight(): Promise<TodayInsight> {
-  return this.request<TodayInsight>("/daily-ai-motivation/today");
-}
+    return this.request<TodayInsight>("/daily-ai-motivation/today");
+  }
+
+  async getAllMotivations(): Promise<{ id: number; insight: string; date: string }[]> {
+    return this.request("/daily-ai-motivation/all");
+  }
   async submitFeedback(sourceId: number, isHelpful: boolean) {
   return this.request("/ai/feedback", {
     method: "POST",
